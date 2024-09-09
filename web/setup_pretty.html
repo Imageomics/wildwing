@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to WildWing</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background: #536e2b;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        main {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        input[type="submit"] {
+            background-color: #536e2b;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #cee397;
+        }
+        a {
+            color: #cee397;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #drone-selectors label {
+            margin-right: 10px;
+        }
+        h2 {
+            border-bottom: 2px solid #536e2b;
+            padding-bottom: 10px;
+        }
+        h3 {
+            margin-bottom: 5px;
+            color: #cee397;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to WildWing</h1>
+    </header>
+    <main>
+        <p>WildWing is a platform that allows you to launch and monitor autonomous drone missions for animal ecology studies.</p>
+    
+        <h2>Setup Your Mission</h2>
+        <form action="/run-mission" method="POST">
+            <label for="number-drone">Number of drones: </label>
+            <input type="number" id="number-drone" name="number-drone" min="1" max="10">
+            
+            <div id="drone-selectors"></div>
+
+            <div id="mission-type-container" class="hidden">
+                <label for="mission-type">Mission type: </label>
+                <select id="mission-type" name="mission-type">
+                    <option value="">Select a mission type</option>
+                    <option value="Waypoint">Waypoint (GPS)</option>
+                    <option value="Autonomous">Autonomous</option>
+                </select>
+            </div>
+
+            <div id="auto-mission" class="hidden">
+                <label for="auto-mission-type">Mission parameters: </label>
+                <select id="auto-mission-type" name="auto-mission-type">
+                    <option value="">Select autonomous mission type</option>
+                    <option value="Search">Herd tracker</option>
+                    <option value="Survey">Depth estimation</option>
+                </select>
+                
+                <label for="auto-mission-model">Select computer vision model:</label>
+                <select id="auto-mission-model" name="auto-mission-model">
+                    <option value="">Select computer vision model</option>
+                    <option value="YOLOv5s">YOLOv5s</option>
+                    <option value="YOLOv8n">YOLOv8n</option>
+                    <option value="YOLOv8s">YOLOv8s</option>
+                    <option value="YOLOv8m">YOLOv8m</option>
+                    <option value="YOLOv8l">YOLOv8l</option>
+                    <option value="YOLOv9">YOLOv9</option>
+                </select>
+            </div>
+
+            <div id="waypoint-fields" class="hidden">
+                <label for="waypoint-file">Upload Waypoint File: </label>
+                <input type="file" id="waypoint-file" name="waypoint-file">
+            </div>
+
+            <div id="edge-speedup-checkbox" class="hidden">
+                <input type="checkbox" id="use-edge-speedup" name="use-edge-speedup">
+                <label for="use-edge-speedup">Use Edge Speedup</label>
+            </div>
+
+            <div id="edge-speedup" class="hidden">
+                <h3>Edge Speedup</h3>
+                <p>Edge speedup is a technique that allows you to distribute the mission workload across edge devices to speed up mission execution.
+                Click <a href="edge_info.html">here</a> for more information on edge placement strategies.</p>
+
+                <label for="edge-device-type">Select edge device:</label>
+                <select id="edge-device-type" name="edge-device-type">
+                    <option value="Jetson Nano">Jetson Nano</option>
+                    <option value="Raspberry Pi">Raspberry Pi</option>
+                </select>
+                
+                <label>Select edge placement technique:</label>
+                <select id="edge-speedup" name="edge-speedup">
+                    <option value="none">None (single-node)</option>
+                    <option value="low">Round robin</option>
+                    <option value="high">Equal utilization</option>
+                    <option value="high">Max distribution</option>
+                </select>
+            </div>
+        <input type="submit" value="Start Mission">
+        </form>
+    </main>
+
+    <script>
+        function checkFields() {
+            const numberOfDrones = document.getElementById('number-drone').value;
+            const missionType = document.getElementById('mission-type').value;
+            const waypointFields = document.getElementById('waypoint-fields');
+            const autoMissionFields = document.getElementById('auto-mission');
+            const edgeSpeedupCheckbox = document.getElementById('edge-speedup-checkbox');
+            const edgeSpeedup = document.getElementById('edge-speedup');
+            const useEdgeSpeedup = document.getElementById('use-edge-speedup').checked;
+
+            let allFieldsFilled = false;
+
+            if (numberOfDrones && missionType) {
+                if (missionType === 'Waypoint') {
+                    waypointFields.classList.remove('hidden');
+                    autoMissionFields.classList.add('hidden');
+                    allFieldsFilled = document.getElementById('waypoint-file').value !== '';
+                } else if (missionType === 'Autonomous') {
+                    waypointFields.classList.add('hidden');
+                    autoMissionFields.classList.remove('hidden');
+                    allFieldsFilled = document.getElementById('auto-mission-type').value !== '' && document.getElementById('auto-mission-model').value !== '';
+                } else {
+                    waypointFields.classList.add('hidden');
+                    autoMissionFields.classList.add('hidden');
+                }
+            } else {
+                waypointFields.classList.add('hidden');
+                autoMissionFields.classList.add('hidden');
+            }
+
+            if (allFieldsFilled) {
+                edgeSpeedupCheckbox.classList.remove('hidden');
+            } else {
+                edgeSpeedupCheckbox.classList.add('hidden');
+                edgeSpeedup.classList.add('hidden');
+            }
+
+            if (useEdgeSpeedup && allFieldsFilled) {
+                edgeSpeedup.classList.remove('hidden');
+            } else {
+                edgeSpeedup.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('number-drone').addEventListener('input', function() {
+            const numberOfDrones = this.value;
+            const droneSelectorsContainer = document.getElementById('drone-selectors');
+            const missionTypeContainer = document.getElementById('mission-type-container');
+            droneSelectorsContainer.innerHTML = ''; // Clear existing selectors
+
+            for (let i = 0; i < numberOfDrones; i++) {
+                const label = document.createElement('label');
+                label.setAttribute('for', `drone-type-${i}`);
+                label.textContent = `Select model for drone ${i + 1}:`;
+
+                const select = document.createElement('select');
+                select.setAttribute('id', `drone-type-${i}`);
+                select.setAttribute('name', `drone-type-${i}`);
+
+                const option1 = document.createElement('option');
+                option1.setAttribute('value', 'quadcopter');
+                option1.textContent = 'DJI';
+
+                const option2 = document.createElement('option');
+                option2.setAttribute('value', 'fixed-wing');
+                option2.textContent = 'Parrot Anafi';
+
+                select.appendChild(option1);
+                select.appendChild(option2);
+
+                droneSelectorsContainer.appendChild(label);
+                droneSelectorsContainer.appendChild(select);
+                droneSelectorsContainer.appendChild(document.createElement('br'));
+            }
+
+            if (numberOfDrones > 0) {
+                missionTypeContainer.classList.remove('hidden');
+            } else {
+                missionTypeContainer.classList.add('hidden');
+            }
+
+            checkFields();
+        });
+
+        document.getElementById('mission-type').addEventListener('change', checkFields);
+        document.getElementById('waypoint-file').addEventListener('change', checkFields);
+        document.getElementById('auto-mission-type').addEventListener('change', checkFields);
+        document.getElementById('auto-mission-model').addEventListener('change', checkFields);
+        document.getElementById('use-edge-speedup').addEventListener('change', checkFields);
+    
+        document.getElementById('mission-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const formEntries = {};
+            formData.forEach((value, key) => {
+                formEntries[key] = value;
+            });
+            console.log('Form Data:', formEntries);
+    
+            fetch('/submit', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+            .then(data => {
+                alert('Mission started!');
+                // Redirect to the run-mission page
+                window.location.href = '/run-mission.html';
+            }).catch(error => {
+                alert('An error occurred while starting the mission.');
+            });
+        });
+    
+    </script>
+</body>
+</html>

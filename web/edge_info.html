@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #cee397;
+            color: #536e2b;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #536e2b;
+        }
+        th {
+            background-color: #536e2b;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f7f7f7;
+        }
+        tr:hover {
+            background-color: #d4e2ad;
+        }
+        caption {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #536e2b;
+        }
+    </style>
+</head>
+<body>
+
+    <table>
+        <caption>Model Placement Strategies</caption>
+        <thead>
+            <tr>
+                <th>Placement Strategy</th>
+                <th>Description</th>
+                <th>Procedure</th>
+                <th>Advantages</th>
+                <th>Limitations</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Single Node</td>
+                <td>Baseline approach</td>
+                <td>One device handles all inference</td>
+                <td>Simple to implement</td>
+                <td>Under-utilization of resources, inability to handle large models, lack of adaptability</td>
+            </tr>
+            <tr>
+                <td>Round Robin</td>
+                <td>Assigns whole models to nodes in a round-robin fashion</td>
+                <td>Each node is assigned one entire model, cycling through the available nodes until all models are placed</td>
+                <td>Simple to implement and can provide basic load distribution</td>
+                <td>Does not account for heterogeneous device capabilities or varying model sizes</td>
+            </tr>
+            <tr>
+                <td>Equal Utilization</td>
+                <td>Aims to balance node utilization through intelligently placing splits</td>
+                <td>Models are split into segments, and these segments are distributed across nodes in a greedy fashion to achieve even utilization</td>
+                <td>Can lead to reduced queue times and more efficient resource use</td>
+                <td>Not always optimal if network latency is high or if utilization is low</td>
+            </tr>
+            <tr>
+                <td>Max Distribution</td>
+                <td>Splits each model across as many nodes as possible</td>
+                <td>Each model is split into segments proportional to the computational power of the available nodes</td>
+                <td>Can improve performance when load is concentrated on one neural network at a time</td>
+                <td>Does not scale well with utilization or network latency</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
