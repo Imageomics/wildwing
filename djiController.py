@@ -40,7 +40,7 @@ if not os.path.exists(csv_file_path):
 class Tracker:
     def __init__(self, drone, model):
         self.drone = drone
-        self.media = drone.camera.media
+        self.media = drone.videoSource
         self.model = model
         self.frame = None
         self.FPS = 1/60
@@ -87,7 +87,7 @@ class Tracker:
                         writer = csv.writer(file)
                         writer.writerow([timestamp, telemetry[0], telemetry[1], telemetry[2], x_direction, y_direction, z_direction, self.media.frame_counter])
 
-                    self.drone.piloting.move_by(x_direction, y_direction, z_direction, 0)
+                    self.drone.requestSendStick(0, z_direction, x_direction, y_direction)
 
                 # cv2.imwrite(os.path.join(self.download_dir, "test{}.jpg".format(self.frame_counter)), cv2frame)
                
