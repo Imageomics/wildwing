@@ -77,7 +77,7 @@ class DJIInterface:
             return {'speed': {'x': 0, 'y': 0, 'z': 0}, 'heading': -90, 'attitude': {'pitch': 4.2, 'roll': -0.30000000000000004, 'yaw': -90}, 'location': {'latitude': 0.025641348125899938, 'longitude': 36.90376260204561, 'altitude': 20}, 'gimbalAttitude': {'pitch': -10, 'roll': 0, 'yaw': -20}, 'zoomFl': 168, 'hybridFl': 1680, 'opticalFl': 1680, 'zoomRatio': 7.0}
             # return {'speed': {'x': 0, 'y': 0, 'z': 0}, 'heading': -130.6, 'attitude': {'pitch': 4.2, 'roll': -0.30000000000000004, 'yaw': -130.6}, 'location': {'latitude': 51.4233478, 'longitude': -2.6716311, 'altitude': 20}, 'gimbalAttitude': {'pitch': -10, 'roll': 0, 'yaw': -90}, 'zoomFl': 168, 'hybridFl': 1680, 'opticalFl': 1680, 'zoomRatio': 7.0}
         elif self.MODE == "drone":
-            return requestAllStates()
+            return self.requestAllStates()
         elif self.MODE == "replay":
             if advance:
                 data = next(self.telemIter)[1]
