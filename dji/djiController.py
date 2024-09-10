@@ -17,6 +17,9 @@ from dji.djiInterface import DJIInterface
 # 5 minutes is 300 seconds
 DURATION = 200  # duration in seconds
 
+# drone adjustment parameter
+S = 0.3
+
 
 class DJICamera:
     def __init__(self):
@@ -83,6 +86,12 @@ class Tracker:
         yuv_frame.unref()
 
 
+def takeoff(dji_drone):
+    start = time.time()
+    while time.time() - start < 5:
+        dji_drone.requestSendStick(0, S, 0, 0)
+    dji_drone.requestSendStick(0, 0, 0, 0)
+
 def main():
     # Retrieve the filename from command-line arguments
     if len(sys.argv) < 2:
@@ -102,18 +111,13 @@ def main():
             writer.writerow(["timestamp", "x", "y", "z", "move_x",
                             "move_y", "move_z", "frame"])
 
-    # Setup a dji drone, connected through a controller
+    # Setup a dji drone
     dji_drone = DJIInterface(MODE='drone', IP_RC='localhost')
     dji_camera = DJICamera()
-
     model = YOLO('yolov5su')
 
     # Take off
-    cmdAlt = 1
-    dji_drone.requestSendStick(0, cmdAlt, 0, 0)
-
-    # wait for drone to stabilize
-    time.sleep(5)
+    takeoff(dji_drone)
 
     # Create a tracker object
     tracker = Tracker(dji_drone, model, csv_file_path, output_directory)
