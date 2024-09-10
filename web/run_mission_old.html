@@ -82,10 +82,47 @@
 </head>
 <body>
     <header>
-        <h1>Drone Status Tracker - WildWing</h1>
+        <h1>WildWing Mission Monitoring</h1>
     </header>
 
     <main>
+        <section>
+             <!-- Mission Info Section -->
+            <h2>Mission Information</h2>
+            <div class="mission-info">
+                <div class="info-box">
+                    <h3>Number of Drones:</h3>
+                    <p>{{ mission_data.number_of_drones }}</p>
+                </div>
+                <div class="info-box">
+                    <h3>Drone Models:</h3>
+                    <ul>
+                    {% for model in mission_data.drone_models %}
+                        <li>{{ model }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div class="info-box">
+                    <h3>Mission Type:</h3>
+                    <p>{{ mission_data.mission_type }}</p>
+                </div>
+                {% if mission_data.mission_type == 'autonomous' %}
+                <div class="info-box">
+                    <h3>Autonomous Mission Type:</h3>
+                    <p>{{ mission_data.autonomous_mission_type }}</p>
+                </div>
+                <div class="info-box">
+                    <h3>CV Model:</h3>
+                    <p>{{ mission_data.cv_model }}</p>
+                </div>
+                {% elif mission_data.mission_type == 'waypoint' %}
+                <div class="info-box">
+                    <h3>Waypoint File:</h3>
+                    <p>{{ mission_data.waypoint_file }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
         <!-- Drone Status Section -->
         <section>
             <h2>Drone Status</h2>
