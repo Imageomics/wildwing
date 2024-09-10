@@ -18,6 +18,12 @@ from dji.djiInterface import DJIInterface
 DURATION = 200  # duration in seconds
 
 
+class DJICamera:
+    def __init__(self):
+        self.running = False
+        self.frame_counter = 0
+
+
 # Runs what to do on every yuv_frame of the stream, modify it as needed
 class Tracker:
     def __init__(self, drone, model, csv_file_path, output_directory):
@@ -64,7 +70,8 @@ class Tracker:
                                          telemetry[2], x_direction, y_direction,
                                          z_direction, self.media.frame_counter])
 
-                    self.drone.requestSendStick(0, z_direction, x_direction, y_direction)
+                    self.drone.requestSendStick(
+                        0, z_direction, x_direction, y_direction)
 
             except queue.Empty:
                 continue
@@ -95,19 +102,20 @@ def main():
                             "move_y", "move_z", "frame"])
 
     # Setup a dji drone, connected through a controller
-    dji = DJIInterface(MODE='drone', IP_RC='localhost')
+    dji_drone = DJIInterface(MODE='drone', IP_RC='localhost')
+    dji_camera = DJICamera()
 
     model = YOLO('yolov5su')
 
     # Take off
     cmdAlt = 1
-    dji.requestSendStick(0, cmdAlt, 0, 0)
+    dji_drone.requestSendStick(0, cmdAlt, 0, 0)
 
     # wait for drone to stabilize
     time.sleep(5)
 
     # Create a tracker object
-    tracker = Tracker(dji, model, csv_file_path, output_directory)
+    tracker = Tracker(dji_drone, model, csv_file_path, output_directory)
 
     # wait for drone to stabilize
     time.sleep(5)
@@ -117,7 +125,7 @@ def main():
 
     # Land the drone
     cmdAlt = 0
-    dji.requestSendStick(0, cmdAlt, 0, 0)
+    dji_drone.requestSendStick(0, cmdAlt, 0, 0)
 
 
 if __name__ == '__main__':
