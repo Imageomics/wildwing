@@ -41,7 +41,7 @@ class DJIInterface:
             if IP_RC == "":
                 raise ValueError("IP_RC must be given to DJIInterface constructor with MODE drone")
             self.IP_RC = IP_RC
-            self.baseTelemUrl = f"http://{IP_RC}:8080"
+            self.baseTelemUrl = f"http://{self.IP_RC}:8080"
             self.videoSource = f"rtsp://aaa:aaa@{self.IP_RC}:8554/streaming/live/1"
         elif MODE == "replay":
             if LOG_PATH == "":
