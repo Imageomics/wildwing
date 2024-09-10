@@ -26,7 +26,7 @@ class DJICamera:
 
 # Runs what to do on every yuv_frame of the stream, modify it as needed
 class Tracker:
-    def __init__(self, drone, model, csv_file_path, output_directory):
+    def __init__(self, drone: DJIInterface, model, csv_file_path, output_directory):
         self.drone = drone
         self.media = drone.videoSource
         self.model = model
@@ -58,16 +58,17 @@ class Tracker:
 
                     # save telemetry
                     # test!
-                    telemetry = drone.get_drone_coordinates()
+                    telemetry = self.drone.requestTelem()['location']
 
                     # Convert time.time() to datetime object
                     timestamp = datetime.datetime.fromtimestamp(
                         time.time()).strftime('%Y-%m-%d %H:%M:%S')
+
                     # Append telemetry data to CSV file
                     with open(self.csv_file_path, mode='a', newline='', encoding='utf-8') as file:
                         writer = csv.writer(file)
-                        writer.writerow([timestamp, telemetry[0], telemetry[1],
-                                         telemetry[2], x_direction, y_direction,
+                        writer.writerow([timestamp, telemetry['latitude'], telemetry['longitude'],
+                                         telemetry['altitude'], x_direction, y_direction,
                                          z_direction, self.media.frame_counter])
 
                     self.drone.requestSendStick(
