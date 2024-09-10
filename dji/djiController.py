@@ -9,6 +9,7 @@ import olympe
 from ultralytics import YOLO
 import navigation
 from dji.djiInterface import DJIInterface, DJIController
+from dji.djiCamera import DJICamera
 
 # To run, first fly the drone an area with direct sight of the zebras using the FreeFlight6 app
 # Then run the program
@@ -21,17 +22,11 @@ DURATION = 200  # duration in seconds
 S = 0.3
 
 
-class DJICamera:
-    def __init__(self):
-        self.running = False
-        self.frame_counter = 0
-
-
 # Runs what to do on every yuv_frame of the stream, modify it as needed
 class Tracker:
-    def __init__(self, drone: DJIInterface, model, csv_file_path, output_directory):
+    def __init__(self, drone: DJIInterface, camera: DJICamera, model, csv_file_path, output_directory):
         self.drone = drone
-        self.media = drone.videoSource
+        self.media = camera
         self.model = model
         self.csv_file_path = csv_file_path
         self.output_directory = output_directory
@@ -131,7 +126,7 @@ def main():
     takeoff(dji_drone)
 
     # Create a tracker object
-    tracker = Tracker(dji_drone, model, csv_file_path, output_directory)
+    tracker = Tracker(dji_drone, dji_camera, model, csv_file_path, output_directory)
 
     # wait for drone to stabilize
     time.sleep(5)
