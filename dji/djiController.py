@@ -69,8 +69,7 @@ class Tracker:
                                          telemetry['altitude'], x_direction, y_direction,
                                          z_direction, self.media.frame_counter])
 
-                    self.drone.requestSendStick(
-                        0, z_direction, x_direction, y_direction)
+                    move_by(self.drone, z_direction, x_direction, y_direction)
 
             except queue.Empty:
                 continue
@@ -86,6 +85,21 @@ def takeoff(dji_drone: DJIInterface):
     while time.time() - start < 5:
         dji_drone.requestSendStick(0, S, 0, 0)
     dji_drone.requestSendStick(0, 0, 0, 0)
+
+
+def move_by(dji_drone: DJIInterface, z_direction, x_direction, y_direction):
+    z_abs = abs(z_direction)
+    x_abs = abs(x_direction)
+    y_abs = abs(y_direction)
+    max_abs = max([z_abs, x_abs, y_abs])
+
+    if max_abs > S:
+        scale = max_abs / S
+        z_direction *= scale
+        x_direction *= scale
+        y_direction *= scale
+
+    dji_drone.requestSendStick(0, z_direction, x_direction, y_direction)
 
 
 def landing(dji_drone: DJIInterface):
@@ -126,7 +140,8 @@ def main():
     takeoff(dji_drone)
 
     # Create a tracker object
-    tracker = Tracker(dji_drone, dji_camera, model, csv_file_path, output_directory)
+    tracker = Tracker(dji_drone, dji_camera, model,
+                      csv_file_path, output_directory)
 
     # wait for drone to stabilize
     time.sleep(5)
