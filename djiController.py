@@ -1,14 +1,13 @@
-import cv2
-import time
-import queue
-import olympe
-from ultralytics import YOLO
-import navigation as navigation
 import sys
 import time
-import csv
+import queue
+import cv2
 import os
 import datetime
+import csv
+import olympe
+from ultralytics import YOLO
+import navigation
 from dji.djiInterface import DJIInterface
 
 # To run, first fly the drone an area with direct sight of the zebras using the FreeFlight6 app
@@ -34,7 +33,8 @@ class Tracker:
                 yuv_frame = self.media.frame_queue.get(timeout=0.1)
                 self.media.frame_counter += 1
 
-                # note: adjust this number to change how often the drone moves (every 20 frames in this case)
+                # note: adjust this number to change how often the drone moves
+                # (every 20 frames in this case)
                 if (self.media.frame_counter % 40) == 0:
                     # convert pdraw YUV flag to OpenCV YUV flag
                     cv2_cvt_color_flag = {
@@ -46,8 +46,9 @@ class Tracker:
                         yuv_frame.as_ndarray(), cv2_cvt_color_flag)
 
                     x_direction, y_direction, z_direction = navigation.get_next_action(
-                        cv2frame, self.model, self.output_directory, self.media.frame_counter)  # KEY LINE
-                    # self.update_frame(cv2.imread('result.jpg'))
+                        cv2frame, self.model,
+                        self.output_directory,
+                        self.media.frame_counter)  # KEY LINE
 
                     # save telemetry
                     # test!
