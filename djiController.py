@@ -25,7 +25,6 @@ class Tracker:
         self.drone = drone
         self.media = drone.videoSource
         self.model = model
-        self.frame = None
         self.csv_file_path = csv_file_path
         self.output_directory = output_directory
 
