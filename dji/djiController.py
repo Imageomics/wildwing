@@ -8,7 +8,7 @@ import csv
 import olympe
 from ultralytics import YOLO
 import navigation
-from dji.djiInterface import DJIInterface
+from dji.djiInterface import DJIInterface, DJIController
 
 # To run, first fly the drone an area with direct sight of the zebras using the FreeFlight6 app
 # Then run the program
@@ -70,7 +70,7 @@ class Tracker:
                     # Append telemetry data to CSV file
                     with open(self.csv_file_path, mode='a', newline='', encoding='utf-8') as file:
                         writer = csv.writer(file)
-                        writer.writerow([timestamp, telemetry['latitude'], telemetry['longitude'],
+                        writer.writerow([timestamp, telemetry['latitude'], telemetry[''],
                                          telemetry['altitude'], x_direction, y_direction,
                                          z_direction, self.media.frame_counter])
 
@@ -86,11 +86,22 @@ class Tracker:
         yuv_frame.unref()
 
 
-def takeoff(dji_drone):
+def takeoff(dji_drone: DJIInterface):
     start = time.time()
     while time.time() - start < 5:
         dji_drone.requestSendStick(0, S, 0, 0)
     dji_drone.requestSendStick(0, 0, 0, 0)
+
+
+def landing(dji_drone: DJIInterface):
+    controller = DJIController()
+    telemetry = dji_drone.requestTelem()
+    wp = {'head': telemetry['heading'],
+          'lat': telemetry['location']['latitude'],
+          'lon': telemetry['location']['longitude'],
+          'alt': 0}
+    controller.gotoWP(wp)
+
 
 def main():
     # Retrieve the filename from command-line arguments
@@ -129,8 +140,7 @@ def main():
     time.sleep(DURATION)
 
     # Land the drone
-    cmdAlt = 0
-    dji_drone.requestSendStick(0, cmdAlt, 0, 0)
+    landing(dji_drone)
 
 
 if __name__ == '__main__':
