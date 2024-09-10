@@ -11,6 +11,7 @@ import os
 import subprocess
 import numpy as np
 import pandas as pd
+import signal
 
 
 RESSOURCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Ressources")
