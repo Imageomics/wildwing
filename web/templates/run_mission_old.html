@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WildWing Mission Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .mission-info, .system-performance {
+            flex-basis: 48%;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .data-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .data-box {
+            flex-basis: 23%;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .map-container, .camera-container {
+            width: 100%;
+            height: 300px;
+            background-color: #ddd;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .end-mission-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #dc3545;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .end-mission-button:hover {
+            background-color: #c82333;
+        }
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Step 2: Execute Drone Mission</h1>
+
+        <div class="info-panel">
+            <div class="mission-info">
+                <h2>Mission Information</h2>
+                <p><strong>Number of Drones:</strong> {{ mission_data.number_of_drones }}</p>
+                <p><strong>Drone Models:</strong> 
+                    {% if mission_data.drone_models %}
+                        {{ mission_data.drone_models|reject('none')|join(', ') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+                <p><strong>Mission Type:</strong> {{ mission_data.mission_type }}</p>
+                {% if mission_data.mission_type == 'autonomous' %}
+                    <p><strong>Autonomous Mission Type:</strong> {{ mission_data.autonomous_mission_type }}</p>
+                    <p><strong>CV Model:</strong> {{ mission_data.cv_model }}</p>
+                {% elif mission_data.mission_type == 'waypoint' %}
+                    <p><strong>Waypoint File:</strong> {{ mission_data.waypoint_file }}</p>
+                {% endif %}
+            </div>
+            <div class="system-performance">
+                <h2>System Performance</h2>
+                <p><strong>CPU Utilization:</strong> <span id="cpu-utilization">5%</span></p>
+                <p><strong>Latency:</strong> <span id="latency">30ms</span></p>
+            </div>
+        </div>
+
+        <h2>Drone Status</h2>
+        <div class="data-section">
+            <div class="data-box">
+                <h3>GPS Coordinates</h3>
+                <p>Lat: 0, Long: 0</p>
+            </div>
+            <div class="data-box">
+                <h3>Altitude</h3>
+                <p>0 meters</p>
+            </div>
+            <div class="data-box">
+                <h3>Speed</h3>
+                <p>0 m/s</p>
+            </div>
+            <div class="data-box">
+                <h3>Battery Level</h3>
+                <p>100%</p>
+            </div>
+        </div>
+
+        <h2>Drone Location</h2>
+        <div id="map-container" class="map-container">
+            <!-- Map will be inserted here -->
+        </div>
+
+        <h2>Live Drone Camera Feed</h2>
+        <div class="camera-container">
+            <!-- Camera feed will be inserted here -->
+             <!-- Adding old video for demo purposes -->
+            <video id="player" controls loop autoplay mute playsinline>
+                <source src="/static/video/DJI_0069_720.mov" type="video/mp4">
+            </video>
+        </div>
+    
+        <a href="{{ url_for('end_mission') }}" class="end-mission-button">End Mission</a>
+    </div>
+
+    <script>
+        // Add JavaScript to update the data in real-time
+        function updatePerformance() {
+            document.getElementById('cpu-utilization').textContent = Math.floor(Math.random() * 100) + '%';
+            document.getElementById('latency').textContent = Math.floor(Math.random() * 100) + 'ms';
+        }
+        
+        // Update every second
+        setInterval(updatePerformance, 1000);
+    </script>
+</body>
+</html>

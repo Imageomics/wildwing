@@ -12,6 +12,16 @@
             padding: 20px;
             background-color: #f4f4f4;
         }
+        header {
+            background: #536e2b;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -20,8 +30,13 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1, h2 {
-            color: #333;
+        h2 {
+            border-bottom: 2px solid #536e2b;
+            padding-bottom: 10px;
+        }
+        h3 {
+            margin-bottom: 5px;
+            color: #536e2b;
         }
         ul {
             padding-left: 20px;
@@ -35,11 +50,15 @@
     </style>
 </head>
 <body>
+    <header>
+        <h1>Welcome to WildWing</h1>
+    </header>
+    <main>
     <div class="container">
-        <h1>Step 3: Data Analysis</h1>
+        <h2>Step 3: Data Analysis</h1>
         
         <div class="mission-summary">
-            <h2>Mission Summary</h2>
+            <h3>Mission Summary</h3>
             <p><strong>Number of Drones:</strong> {{ mission_data.number_of_drones }}</p>
             <p><strong>Mission Type:</strong> {{ mission_data.mission_type }}</p>
             {% if mission_data.mission_type == 'autonomous' %}
@@ -50,7 +69,7 @@
             {% endif %}
         </div>
 
-        <h2>Analysis Instructions</h2>
+        <h3>Analysis Instructions</h3>
         <p>Follow these steps to analyze the video and telemetry data collected during your mission:</p>
         
         <ol>
@@ -97,5 +116,6 @@
         
         <a href="{{ url_for('index') }}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Return to Home</a>
     </div>
+    </main>
 </body>
 </html>

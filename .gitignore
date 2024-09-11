@@ -28,3 +28,8 @@ Thumbs.db
 
 # Ignore tests
 /tests
+
+# Ignore mission data
+/missions
+/AnafiMedia
+/web/static
