@@ -128,7 +128,7 @@ def main():
                       csv_file_path, output_directory)
 
     # Set up recording
-    dji_camera.setup_recording()
+    #dji_camera.setup_recording()
     dji_camera.start_recording()
 
     # Start the stream
@@ -140,7 +140,7 @@ def main():
 
     # Stop recording
     dji_camera.start_recording()
-    dji_camera.download_last_media()
+    #dji_camera.download_last_media()
 
     # Land the drone
     landing(dji_drone)
