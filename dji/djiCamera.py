@@ -6,22 +6,24 @@ import threading
 
 
 class DJICamera:
-    def __init__(self, IP_RC, download='output.mp4'):
+    def __init__(self, IP_RC, frame="buffer.jpg", download="output.mp4"):
         self.running = False
         self.frame_counter = -1
         self.frame_queue = None
         self.processing_thread = None
-        self.download = download
         self.source = f"rtsp://aaa:aaa@{IP_RC}:8554/streaming/live/1"
-        self.record_command = f'ffmpeg -i {self.source} -c copy {self.download}'
+        self.record_command = f'ffmpeg -i {self.source} -c copy {download}'
         self.recording_process = None
+        self.stream_command = f'ffmpeg -i {self.source} -vf fps=10 -update 1' + \
+            f'-hls_flags temp_file {frame} -y '
         self.streaming_process = None
 
     def setup_recording(self):
         raise NotImplementedError()
 
     def start_recording(self):
-        self.recording_process = subprocess.Popen(shlex.split(self.record_command))
+        self.recording_process = subprocess.Popen(
+            shlex.split(self.record_command))
 
     def setup_stream(self, live_callback=None):
         self.frame_queue = queue.Queue()
@@ -29,10 +31,14 @@ class DJICamera:
 
     def start_stream(self):
         self.running = True
+        self.streaming_process = subprocess.Popen(
+            shlex.split(self.stream_command))
         self.processing_thread.start()
 
     def stop_stream(self):
         self.running = False
+        self.streaming_process.send_signal(signal.SIGINT)
+        self.streaming_process.wait()
         self.processing_thread.join()
 
     def stop_recording(self):
