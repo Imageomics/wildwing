@@ -132,8 +132,8 @@ def main():
                             "move_y", "move_z", "frame"])
 
     # Setup a dji drone
-    dji_drone = DJIInterface(MODE='drone', IP_RC='localhost')
-    dji_camera = DJICamera()
+    dji_drone = DJIInterface(MODE='drone', IP_RC='???')
+    dji_camera = DJICamera(IP_RC='???')
     model = YOLO('yolov5su')
 
     # Take off
@@ -143,11 +143,20 @@ def main():
     tracker = Tracker(dji_drone, dji_camera, model,
                       csv_file_path, output_directory)
 
-    # wait for drone to stabilize
-    time.sleep(5)
+    # Set up recording
+    dji_camera.setup_recording()
+    dji_camera.start_recording()
 
-    # set track duration in seconds
+    # Start the stream
+    dji_camera.setup_stream(live_callback=tracker.track)
+    dji_camera.start_stream()
+
+    # Set track duration in seconds
     time.sleep(DURATION)
+
+    # Stop recording
+    dji_camera.start_recording()
+    dji_camera.download_last_media()
 
     # Land the drone
     landing(dji_drone)
