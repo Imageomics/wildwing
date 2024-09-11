@@ -1,11 +1,9 @@
 import sys
 import time
 import queue
-import cv2
 import os
 import datetime
 import csv
-import olympe
 from ultralytics import YOLO
 import navigation
 from dji.djiInterface import DJIInterface, DJIController
@@ -34,21 +32,12 @@ class Tracker:
     def track(self):
         while self.media.running:
             try:
-                yuv_frame = self.media.frame_queue.get(timeout=0.1)
+                cv2frame = self.media.frame_queue.get(timeout=0.1)
                 self.media.frame_counter += 1
 
                 # note: adjust this number to change how often the drone moves
                 # (every 20 frames in this case)
                 if (self.media.frame_counter % 40) == 0:
-                    # convert pdraw YUV flag to OpenCV YUV flag
-                    cv2_cvt_color_flag = {
-                        olympe.VDEF_I420: cv2.COLOR_YUV2BGR_I420,
-                        olympe.VDEF_NV12: cv2.COLOR_YUV2BGR_NV12,
-                    }[yuv_frame.format()]
-
-                    cv2frame = cv2.cvtColor(
-                        yuv_frame.as_ndarray(), cv2_cvt_color_flag)
-
                     x_direction, y_direction, z_direction = navigation.get_next_action(
                         cv2frame, self.model,
                         self.output_directory,
@@ -73,11 +62,6 @@ class Tracker:
 
             except queue.Empty:
                 continue
-
-        # You should process your frames here and release (unref) them when you're done.
-        # Don't hold a reference on your frames for too long to avoid memory leaks and/or memory
-        # pool exhaustion.
-        yuv_frame.unref()
 
 
 def takeoff(dji_drone: DJIInterface):
