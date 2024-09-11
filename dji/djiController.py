@@ -103,7 +103,7 @@ def move_by(dji_drone: DJIInterface, z_direction, x_direction, y_direction):
 
 
 def landing(dji_drone: DJIInterface):
-    controller = DJIController()
+    controller = DJIController(interface=dji_drone, wpList=[])
     telemetry = dji_drone.requestTelem()
     wp = {'head': telemetry['heading'],
           'lat': telemetry['location']['latitude'],
