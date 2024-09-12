@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Analysis - WildWing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #536e2b;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            border-bottom: 2px solid #536e2b;
+            padding-bottom: 10px;
+        }
+        h3 {
+            margin-bottom: 5px;
+            color: #536e2b;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .mission-summary {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to WildWing</h1>
+    </header>
+    <main>
+    <div class="container">
+        <h2>Step 3: Data Analysis</h1>
+        
+        <div class="mission-summary">
+            <h3>Mission Summary</h3>
+            <p><strong>Number of Drones:</strong> {{ mission_data.number_of_drones }}</p>
+            <p><strong>Mission Type:</strong> {{ mission_data.mission_type }}</p>
+            {% if mission_data.mission_type == 'autonomous' %}
+                <p><strong>Autonomous Mission Type:</strong> {{ mission_data.autonomous_mission_type }}</p>
+                <p><strong>CV Model Used:</strong> {{ mission_data.cv_model }}</p>
+            {% elif mission_data.mission_type == 'waypoint' %}
+                <p><strong>Waypoint File:</strong> {{ mission_data.waypoint_file }}</p>
+            {% endif %}
+        </div>
+
+        <h3>Analysis Instructions</h3>
+        <p>Follow these steps to analyze the video and telemetry data collected during your mission:</p>
+        
+        <ol>
+            <li>
+                <strong>Access the Data:</strong>
+                <ul>
+                    <li>Video data is stored in the '/missions/video' directory.</li>
+                    <li>Telemetry data is stored in the '/missions/telemetry' directory as CSV files.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Video Analysis:</strong>
+                <ul>
+                    <li>See <a href="https://github.com/Imageomics/kabr-tools">kabr-tools</a> for behavior and time-budget analysis.</li>
+                    <li>TO DO: add resources from review paper for further analysis</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Telemetry Analysis:</strong>
+                <ul>
+                    <li>Use pandas to load and process the CSV files containing telemetry data.</li>
+                    <li>Analyze drone paths, speeds, and altitudes throughout the mission.</li>
+                    <li>Correlate telemetry data with video timestamps for comprehensive analysis.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Data Visualization:</strong>
+                <ul>
+                    <li>Use matplotlib or seaborn to create graphs and charts of telemetry data.</li>
+                    <li>Generate maps of drone paths and areas covered during the mission.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Report Generation:</strong>
+                <ul>
+                    <li>Compile your findings into a comprehensive report.</li>
+                    <li>Include statistics on animal counts, distributions, and any notable observations.</li>
+                    <li>Provide recommendations for future missions based on your analysis.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <p>For detailed instructions on using our analysis tools, please refer to the WildWing Analysis Documentation.</p>
+        
+        <a href="{{ url_for('index') }}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Return to Home</a>
+    </div>
+    </main>
+</body>
+</html>

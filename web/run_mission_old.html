@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Status Tracker - WildWing</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #e8f5e9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #536e2b;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        main {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 40px;
+        }
+        h2 {
+            border-bottom: 2px solid #536e2b;
+            padding-bottom: 10px;
+            color: #536e2b
+        }
+        label {
+            font-weight: bold;
+        }
+        .data-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .data-section div {
+            flex: 1;
+        }
+        .data-box {
+            background-color: #f1f8e9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .map-container, .camera-container {
+            width: 100%;
+            height: 300px;
+            background-color: #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+        .performance-panel {
+            background-color: #536e2b;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>WildWing Mission Monitoring</h1>
+    </header>
+
+    <main>
+        <section>
+             <!-- Mission Info Section -->
+            <h2>Mission Information</h2>
+            <div class="mission-info">
+                <div class="info-box">
+                    <h3>Number of Drones:</h3>
+                    <p>{{ mission_data.number_of_drones }}</p>
+                </div>
+                <div class="info-box">
+                    <h3>Drone Models:</h3>
+                    <ul>
+                    {% for model in mission_data.drone_models %}
+                        <li>{{ model }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div class="info-box">
+                    <h3>Mission Type:</h3>
+                    <p>{{ mission_data.mission_type }}</p>
+                </div>
+                {% if mission_data.mission_type == 'autonomous' %}
+                <div class="info-box">
+                    <h3>Autonomous Mission Type:</h3>
+                    <p>{{ mission_data.autonomous_mission_type }}</p>
+                </div>
+                <div class="info-box">
+                    <h3>CV Model:</h3>
+                    <p>{{ mission_data.cv_model }}</p>
+                </div>
+                {% elif mission_data.mission_type == 'waypoint' %}
+                <div class="info-box">
+                    <h3>Waypoint File:</h3>
+                    <p>{{ mission_data.waypoint_file }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        <!-- Drone Status Section -->
+        <section>
+            <h2>Drone Status</h2>
+            <div class="data-section">
+                <div class="data-box">
+                    <label for="gps-coordinates">GPS Coordinates:</label>
+                    <p id="gps-coordinates">Lat: 0, Long: 0</p>
+                </div>
+                <div class="data-box">
+                    <label for="altitude">Altitude:</label>
+                    <p id="altitude">0 meters</p>
+                </div>
+                <div class="data-box">
+                    <label for="speed">Speed:</label>
+                    <p id="speed">0 m/s</p>
+                </div>
+                <div class="data-box">
+                    <label for="battery-level">Battery Level:</label>
+                    <p id="battery-level">100%</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Section -->
+        <section>
+            <h2>Drone Location</h2>
+            <div class="map-container" id="map-container">
+                <!-- Placeholder for the map (Use Google Maps API or similar) -->
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3151.835434507303!2d144.9537363158684!3d-37.81720997975178!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1634567891011" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <!-- Camera Feed Section -->
+        <section>
+            <h2>Live Drone Camera Feed</h2>
+            <div class="camera-container">
+                <!-- Placeholder for live camera feed -->
+                <iframe src="https://www.youtube.com/embed/live_stream?channel=UCxyz12345&autoplay=1" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <!-- Performance Section -->
+        <section>
+            <h2>System Performance</h2>
+            <div class="performance-panel">
+                <p>CPU Utilization: <span id="cpu-utilization">5%</span></p>
+                <p>Latency: <span id="latency">30ms</span></p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Mock data to simulate updates
+        function updateDroneStatus() {
+            document.getElementById("gps-coordinates").textContent = "Lat: 40.748817, Long: -73.985428"; // Example GPS coordinates
+            document.getElementById("altitude").textContent = "120 meters";
+            document.getElementById("speed").textContent = "15 m/s";
+            document.getElementById("battery-level").textContent = "75%";
+        }
+
+        function updatePerformanceStats() {
+            document.getElementById("cpu-utilization").textContent = "35%";
+            document.getElementById("latency").textContent = "45ms";
+        }
+
+        // Simulate live updates every 5 seconds
+        setInterval(updateDroneStatus, 5000);
+        setInterval(updatePerformanceStats, 5000);
+    </script>
+</body>
+</html>
