@@ -107,8 +107,8 @@
                 <label for="auto-mission-type">Mission parameters: </label>
                 <select id="auto-mission-type" name="auto-mission-type">
                     <option value="">Select autonomous mission type</option>
-                    <option value="Search">Herd tracker</option>
-                    <option value="Survey">Depth estimation</option>
+                    <option value="track">Herd tracker</option>
+                    <option value="depth">Depth estimation</option>
                 </select>
                 
                 <label for="auto-mission-model">Select computer vision model:</label>
@@ -216,11 +216,11 @@
                 select.setAttribute('name', `drone-type-${i}`);
 
                 const option1 = document.createElement('option');
-                option1.setAttribute('value', 'quadcopter');
+                option1.setAttribute('value', 'dji');
                 option1.textContent = 'DJI';
 
                 const option2 = document.createElement('option');
-                option2.setAttribute('value', 'fixed-wing');
+                option2.setAttribute('value', 'parrot');
                 option2.textContent = 'Parrot Anafi';
 
                 select.appendChild(option1);

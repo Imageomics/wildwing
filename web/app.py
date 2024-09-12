@@ -18,13 +18,16 @@ def submit():
         # Get form data
         number_of_drones = request.form.get('number-drone')
         
-        # # for each drone, get the model type
-        # drone_models = []
-        # for i in range(int(number_of_drones)):
-        #     drone_models.append(request.form.get(f'drone-{i}-model'))
+        # Get drone models
+        drone_models = []
+        for i in range(int(number_of_drones)):
+            drone_models.append(request.form.get(f'drone-type-{i}'))
         
-        drone_models = [request.form.get(f'drone-{i}-model') for i in range(int(number_of_drones))]
-        drone_models = [model for model in drone_models if model]  # Remove any None or empty strings
+        # Remove any None or empty strings
+        drone_models = [model for model in drone_models if model]
+        
+        # Convert drone_models list to a comma-separated string
+        drone_models_str = ','.join(drone_models)
         
         mission_type = request.form.get('mission-type')
         
@@ -35,38 +38,32 @@ def submit():
             'mission_type': mission_type
         }
         
+        autonomous_mission_type = ''
+        cv_model = ''
+        waypoint_file = ''
+        
         if mission_type == 'autonomous':
-            # get autonomous mission type
+            # Get autonomous mission type
             autonomous_mission_type = request.form.get('autonomous-mission-type')
             cv_model = request.form.get('model')
             session['mission_data']['autonomous_mission_type'] = autonomous_mission_type
             session['mission_data']['cv_model'] = cv_model
-            
-            # # launch the autonomous mission TEST THIS
-            # result = subprocess.run(
-            #     ['./launch_scripts/autonomous_mission.sh', autonomous_mission_type, number_of_drones, drone_models, cv_model],
-            #     capture_output=True,
-            #     text=True,
-            #     check=True
-            # )
         elif mission_type == 'waypoint':
-            # get waypoint file 
+            # Get waypoint file 
             waypoint_file = request.files['waypoint-file'].filename
-            session['mission_date']['waypoint_file'] = waypoint_file
-            
-            # # launch the waypoint mission TEST THIS 
-            # result = subprocess.run(
-            #     ['./launch_scripts/waypoint_mission.sh', number_of_drones, drone_models, waypoint_file],
-            #     capture_output=True,
-            #     text=True,
-            #     check=True
-            # )
-        # else:
-        #     # return error message
-        #     return jsonify({"error": "Invalid mission type"}), 400
+            session['mission_data']['waypoint_file'] = waypoint_file
+        
+        # Launch the mission using inputs from the form
+        # subprocess.run(
+        #     ['/Users/kline.377/wildwing/launch_scripts/run_mission.sh', number_of_drones, drone_models_str, mission_type, autonomous_mission_type, cv_model, waypoint_file],
+        #     capture_output=True,
+        #     text=True,
+        #     check=True
+        # )
 
         return redirect(url_for('run_mission'))
-        # Process the output or return a response
+    
+        # # Process the output or return a response
         # return jsonify({
         #     "message": f"Mission started with {number_of_drones} drones.",
         #     "mission_type": mission_type,
