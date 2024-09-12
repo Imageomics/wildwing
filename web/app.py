@@ -12,7 +12,7 @@ def index():
 # Route to handle form submission and run the Python script
 # @app.route('/templates/run_mission', methods=['POST'])
 #def run_mission():
-@app.route('/submit', methods=['POST'])
+@app.route('/run-mission', methods=['POST'])
 def submit():
     try:
         # Get form data
@@ -54,6 +54,7 @@ def submit():
             session['mission_data']['waypoint_file'] = waypoint_file
         
         # Launch the mission using inputs from the form
+        # COMMENT OUT FOR DEMO
         # subprocess.run(
         #     ['/Users/kline.377/wildwing/launch_scripts/run_mission.sh', number_of_drones, drone_models_str, mission_type, autonomous_mission_type, cv_model, waypoint_file],
         #     capture_output=True,

@@ -216,11 +216,11 @@
                 select.setAttribute('name', `drone-type-${i}`);
 
                 const option1 = document.createElement('option');
-                option1.setAttribute('value', 'dji');
+                option1.setAttribute('value', 'DJI');
                 option1.textContent = 'DJI';
 
                 const option2 = document.createElement('option');
-                option2.setAttribute('value', 'parrot');
+                option2.setAttribute('value', 'Parrot Anafi');
                 option2.textContent = 'Parrot Anafi';
 
                 select.appendChild(option1);
@@ -236,7 +236,6 @@
             } else {
                 missionTypeContainer.classList.add('hidden');
             }
-
             checkFields();
         });
 
