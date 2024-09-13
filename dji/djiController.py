@@ -126,12 +126,14 @@ class DroneController:
 
 # Runs what to do on every yuv_frame of the stream, modify it as needed
 class Tracker:
-    def __init__(self, drone: DJIInterface, camera: DJICamera, model, csv_file_path, output_directory):
+    def __init__(self, drone: DJIInterface, camera: DJICamera, model, csv_file_path, output_directory, get_next_action_func):
         self.drone = drone
         self.media = camera
         self.model = model
         self.csv_file_path = csv_file_path
         self.output_directory = output_directory
+        self.frame_interval = 40  # Adjust this to change how often the drone moves
+        self.get_next_action = get_next_action_func
 
     def track(self):
         while self.media.running:
@@ -139,33 +141,29 @@ class Tracker:
                 cv2frame = self.media.frame_queue.get(timeout=0.1)
                 self.media.frame_counter += 1
 
-                # note: adjust this number to change how often the drone moves
-                # (every 20 frames in this case)
-                if (self.media.frame_counter % 40) == 0:
-                    x_direction, y_direction, z_direction = navigation.get_next_action(
-                        cv2frame, self.model,
-                        self.output_directory,
-                        self.media.frame_counter)  # KEY LINE
-
-                    # save telemetry
-                    # test!
-                    telemetry = self.drone.requestTelem()['location']
-
-                    # Convert time.time() to datetime object
-                    timestamp = datetime.datetime.fromtimestamp(
-                        time.time()).strftime('%Y-%m-%d %H:%M:%S')
-
-                    # Append telemetry data to CSV file
-                    with open(self.csv_file_path, mode='a', newline='', encoding='utf-8') as file:
-                        writer = csv.writer(file)
-                        writer.writerow([timestamp, telemetry['latitude'], telemetry[''],
-                                         telemetry['altitude'], x_direction, y_direction,
-                                         z_direction, self.media.frame_counter])
-
-                    move_by(self.drone, z_direction, x_direction, y_direction)
+                if self.media.frame_counter % self.frame_interval == 0:
+                    self._process_frame(cv2frame)
 
             except queue.Empty:
                 continue
+
+    def _process_frame(self, cv2frame):
+        x_direction, y_direction, z_direction = self.get_next_action(
+            cv2frame, self.model, self.output_directory, self.media.frame_counter)
+        self._move_drone(x_direction, y_direction, z_direction)
+        self._save_telemetry(x_direction, y_direction, z_direction)
+
+    def _move_drone(self, x, y, z):
+        move_by(self.drone, z, x, y)
+
+    def _save_telemetry(self, x_direction, y_direction, z_direction):
+        telemetry = self.drone.requestTelem()['location']
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        with open(self.csv_file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([timestamp, telemetry['latitude'], telemetry['longitude'],
+                             telemetry['altitude'],
+                             x_direction, y_direction, z_direction, self.media.frame_counter])
 
 
 class WaypointController:
@@ -218,13 +216,13 @@ class WaypointController:
             self._save_telemetry(lat, long, alt, i+1)
         self._stop_mission()
 
-    def _move_to(self, lat, long, alt, orientation="NONE", heading=0):        
+    def _move_to(self, lat, long, alt, orientation="NONE", heading=0):
         wp = {'head': heading,
-            'lat': lat,
-            'lon': long,
-            'alt': alt,
-            'gimbalPitch': -1,
-            'zoomRatio':-1}
+              'lat': lat,
+              'lon': long,
+              'alt': alt,
+              'gimbalPitch': -1,
+              'zoomRatio': -1}
         # TODO: fix gimbalPitch & zoomRatio
         self.controller.gotoWP(wp)
 
