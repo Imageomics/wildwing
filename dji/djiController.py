@@ -20,19 +20,61 @@ DURATION = 200  # duration in seconds
 # drone adjustment parameter
 S = 0.3
 
+IP_RC = '???'
+
+
+def takeoff(dji_drone: DJIInterface):
+    start = time.time()
+    while time.time() - start < 5:
+        dji_drone.requestSendStick(0, S, 0, 0)
+    dji_drone.requestSendStick(0, 0, 0, 0)
+
+
+def move_by(dji_drone: DJIInterface, z_direction, x_direction, y_direction):
+    z_abs = abs(z_direction)
+    x_abs = abs(x_direction)
+    y_abs = abs(y_direction)
+    max_abs = max([z_abs, x_abs, y_abs])
+
+    if max_abs > S:
+        scale = max_abs / S
+        z_direction *= scale
+        x_direction *= scale
+        y_direction *= scale
+
+    dji_drone.requestSendStick(0, z_direction, x_direction, y_direction)
+
+
+def landing(dji_drone: DJIInterface):
+    controller = DJIController(interface=dji_drone, wpList=[])
+    telemetry = dji_drone.requestTelem()
+    wp = {'head': telemetry['heading'],
+          'lat': telemetry['location']['latitude'],
+          'lon': telemetry['location']['longitude'],
+          'alt': 0}
+    controller.gotoWP(wp)
+
+
 class DroneController:
     def __init__(self, output_directory, action_script_path, duration=200):
         self.output_directory = output_directory
         self.action_script_path = action_script_path
         self.duration = duration
-        self.csv_file_path = os.path.join(output_directory, 'telemetry_log.csv')
-        self.model = YOLO('yolov5su') # TO DO: add option to specify different model, based on action script
+        self.csv_file_path = os.path.join(
+            output_directory, 'telemetry_log.csv')
+        # TO DO: add option to specify different model, based on action script
+        self.model = YOLO('yolov5su')
         self.drone = None
+        self.camera = None
         self.tracker = None
         self.action_module = None
 
     def setup(self):
-        pass
+        self._ensure_output_directory()
+        self._create_csv_file()
+        self._load_action_script()
+        self._connect_drone()
+        self._create_tracker()
 
     def _ensure_output_directory(self):
         if not os.path.exists(self.output_directory):
@@ -40,35 +82,46 @@ class DroneController:
 
     def _create_csv_file(self):
         if not os.path.exists(self.csv_file_path):
-            with open(self.csv_file_path, mode='w', newline='') as file:
+            with open(self.csv_file_path, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
-                writer.writerow(["timestamp", "x", "y", "z", "move_x", "move_y", "move_z", "frame"])
+                writer.writerow(["timestamp", "x", "y", "z",
+                                "move_x", "move_y", "move_z", "frame"])
 
     def _load_action_script(self):
-        spec = importlib.util.spec_from_file_location("action_module", self.action_script_path)
+        spec = importlib.util.spec_from_file_location(
+            "action_module", self.action_script_path)
         self.action_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.action_module)
         if not hasattr(self.action_module, 'get_next_action'):
-            raise AttributeError("The action script must contain a 'get_next_action' function.")
+            raise AttributeError(
+                "The action script must contain a 'get_next_action' function.")
 
     def _connect_drone(self):
-        pass
+        self.drone = DJIInterface(MODE='drone', IP_RC=IP_RC)
+        self.camera = DJICamera(IP_RC=IP_RC)
+        takeoff(self.drone)
 
     def _create_tracker(self):
-        self.tracker = Tracker(self.drone, self.model, self.output_directory, self.csv_file_path, self.action_module.get_next_action)
+        self.tracker = Tracker(self.drone, self.camera, self.model, self.output_directory,
+                               self.csv_file_path, self.action_module.get_next_action)
 
     def run_mission(self):
-        pass
+        self._start_recording()
+        self._start_streaming()
+        time.sleep(self.duration)
+        self._stop_mission()
 
     def _start_recording(self):
-        pass
+        self.camera.start_recording()
 
     def _start_streaming(self):
-        pass
+        self.camera.setup_stream(live_callback=self.tracker.track)
+        self.camera.start_stream()
 
     def _stop_mission(self):
-        pass
-
+        self.camera.stop_recording()
+        self.camera.stop_stream()
+        landing(self.drone)
 
 
 # Runs what to do on every yuv_frame of the stream, modify it as needed
@@ -115,43 +168,13 @@ class Tracker:
                 continue
 
 
-def takeoff(dji_drone: DJIInterface):
-    start = time.time()
-    while time.time() - start < 5:
-        dji_drone.requestSendStick(0, S, 0, 0)
-    dji_drone.requestSendStick(0, 0, 0, 0)
-
-
-def move_by(dji_drone: DJIInterface, z_direction, x_direction, y_direction):
-    z_abs = abs(z_direction)
-    x_abs = abs(x_direction)
-    y_abs = abs(y_direction)
-    max_abs = max([z_abs, x_abs, y_abs])
-
-    if max_abs > S:
-        scale = max_abs / S
-        z_direction *= scale
-        x_direction *= scale
-        y_direction *= scale
-
-    dji_drone.requestSendStick(0, z_direction, x_direction, y_direction)
-
-
-def landing(dji_drone: DJIInterface):
-    controller = DJIController(interface=dji_drone, wpList=[])
-    telemetry = dji_drone.requestTelem()
-    wp = {'head': telemetry['heading'],
-          'lat': telemetry['location']['latitude'],
-          'lon': telemetry['location']['longitude'],
-          'alt': 0}
-    controller.gotoWP(wp)
-
 class WaypointController:
     def __init__(self, output_directory, action_script_path, duration=200):
         self.output_directory = output_directory
         self.action_script_path = action_script_path
         self.duration = duration
-        self.csv_file_path = os.path.join(output_directory, 'telemetry_log.csv')
+        self.csv_file_path = os.path.join(
+            output_directory, 'telemetry_log.csv')
         self.drone = None
         self.action_module = None
 
@@ -166,14 +189,17 @@ class WaypointController:
         if not os.path.exists(self.csv_file_path):
             with open(self.csv_file_path, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(["timestamp", "x", "y", "z", "move_x", "move_y", "move_z", "waypoint"])
+                writer.writerow(["timestamp", "x", "y", "z",
+                                "move_x", "move_y", "move_z", "waypoint"])
 
     def _load_action_script(self):
-        spec = importlib.util.spec_from_file_location("action_module", self.action_script_path)
+        spec = importlib.util.spec_from_file_location(
+            "action_module", self.action_script_path)
         self.action_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.action_module)
         if not hasattr(self.action_module, 'get_waypoints'):
-            raise AttributeError("The action script must contain a 'get_waypoints' function.")
+            raise AttributeError(
+                "The action script must contain a 'get_waypoints' function.")
 
     def _connect_drone(self):
         pass
@@ -200,63 +226,15 @@ class WaypointController:
 
 
 def main():
-    # Retrieve the filename from command-line arguments
-    if len(sys.argv) < 2:
-        print("Usage: python controller.py <output_directory>")
-        sys.exit(1)
-
-    output_directory = sys.argv[1]
-
-    # Define CSV file path to store telemetry data
-    # Define the CSV file path
-    csv_file_path = os.path.join(output_directory, 'telemetry_log.csv')
-
-    # Ensure the CSV file has a header row
-    if not os.path.exists(csv_file_path):
-        with open(csv_file_path, mode='w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(["timestamp", "x", "y", "z", "move_x",
-                            "move_y", "move_z", "frame"])
-
-    # Setup a dji drone
-    dji_drone = DJIInterface(MODE='drone', IP_RC='???')
-    dji_camera = DJICamera(IP_RC='???')
-    model = YOLO('yolov5su')
-
-    # Take off
-    takeoff(dji_drone)
-
-    # Create a tracker object
-    tracker = Tracker(dji_drone, dji_camera, model,
-                      csv_file_path, output_directory)
-
-    # Set up recording
-    #dji_camera.setup_recording()
-    dji_camera.start_recording()
-
-    # Start the stream
-    dji_camera.setup_stream(live_callback=tracker.track)
-    dji_camera.start_stream()
-
-    # Set track duration in seconds
-    time.sleep(DURATION)
-
-    # Stop recording
-    dji_camera.start_recording()
-    #dji_camera.download_last_media()
-
-    # Land the drone
-    landing(dji_drone)
-
-def main():
     if len(sys.argv) < 4:
-        print("Usage: python parrotController.py <output_directory> <mission_type> <action_script_path>")
+        print("Usage: python djiController.py <output_directory> <mission_type> <action_script_path>")
         sys.exit(1)
 
     output_directory = sys.argv[1]
     mission_type = sys.argv[2]
     autonomous_mission_type = sys.argv[3]
-    cv_model = sys.argv[4] # TO DO: add option to specify different model, based on action script
+    # TO DO: add option to specify different model, based on action script
+    cv_model = sys.argv[4]
     waypoint_file = sys.argv[5]
 
     # TEST THIS
@@ -269,17 +247,19 @@ def main():
         elif autonomous_mission_type.lower() == "depth":
             action_script_path = "/mission_scripts/autonomous/depth_est.py"
         controller = DroneController(output_directory, action_script_path)
-        
+
     elif mission_type.lower() == "waypoint":
         action_script_path = "/mission_scripts/waypoint/waypoints.py"
-        controller = WaypointController(output_directory, action_script_path, waypoint_file)
-        
+        controller = WaypointController(
+            output_directory, action_script_path, waypoint_file)
+
     else:
         print("Invalid mission type. Choose either 'autonomous' or 'waypoint'.")
         sys.exit(1)
 
     controller.setup()
     controller.run_mission()
+
 
 if __name__ == "__main__":
     main()
