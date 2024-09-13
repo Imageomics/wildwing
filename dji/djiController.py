@@ -180,7 +180,10 @@ class WaypointController:
         self.controller = None
 
     def setup(self):
-        pass
+        self._ensure_output_directory()
+        self._create_csv_file()
+        self._load_action_script()
+        self._connect_drone()
 
     def _ensure_output_directory(self):
         if not os.path.exists(self.output_directory):
