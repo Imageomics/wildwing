@@ -177,6 +177,7 @@ class WaypointController:
             output_directory, 'telemetry_log.csv')
         self.drone = None
         self.action_module = None
+        self.controller = None
 
     def setup(self):
         pass
@@ -187,7 +188,7 @@ class WaypointController:
 
     def _create_csv_file(self):
         if not os.path.exists(self.csv_file_path):
-            with open(self.csv_file_path, mode='w', newline='') as file:
+            with open(self.csv_file_path, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["timestamp", "x", "y", "z",
                                 "move_x", "move_y", "move_z", "waypoint"])
@@ -202,7 +203,9 @@ class WaypointController:
                 "The action script must contain a 'get_waypoints' function.")
 
     def _connect_drone(self):
-        pass
+        self.drone = DJIInterface(MODE='drone', IP_RC=IP_RC)
+        takeoff(self.drone)
+        self.controller = DJIController(interface=self.drone, wpList=[])
 
     def run_mission(self):
         waypoints = self.action_module.get_waypoints()
@@ -212,17 +215,24 @@ class WaypointController:
             self._save_telemetry(lat, long, alt, i+1)
         self._stop_mission()
 
-    def _move_to(self, lat, long, alt, orientation="NONE", heading=0):
-        pass
+    def _move_to(self, lat, long, alt, orientation="NONE", heading=0):        
+        wp = {'head': heading,
+            'lat': lat,
+            'lon': long,
+            'alt': alt,
+            'gimbalPitch': -1,
+            'zoomRatio':-1}
+        # TODO: fix gimbalPitch & zoomRatio
+        self.controller.gotoWP(wp)
 
     def _save_telemetry(self, lat, long, alt, waypoint):
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        with open(self.csv_file_path, mode='a', newline='') as file:
+        with open(self.csv_file_path, mode='a', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow([timestamp, lat, long, alt, 0, 0, 0, waypoint])
 
     def _stop_mission(self):
-        pass
+        landing(self.drone)
 
 
 def main():
