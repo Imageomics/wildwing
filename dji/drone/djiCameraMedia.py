@@ -15,6 +15,7 @@ class DJICameraMedia:
         self.fps = fps
         self.frame = "buffer.jpg"
         self.processing_thread = None
+        self.reading_thread = None
         self.source = f"rtsp://aaa:aaa@{drone_ip}:8554/streaming/live/1"
         self.record_command = f'ffmpeg -i {self.source} -c copy {download}'
         self.recording_process = None
@@ -38,6 +39,7 @@ class DJICameraMedia:
         self.running = True
         self.streaming_process = subprocess.Popen(
             shlex.split(self.stream_command))
+        self.reading_thread.start()
         self.processing_thread.start()
 
     def read(self):
@@ -49,9 +51,10 @@ class DJICameraMedia:
 
     def stop_stream(self):
         self.running = False
+        self.processing_thread.join()
+        self.reading_thread.join()
         self.streaming_process.send_signal(signal.SIGINT)
         self.streaming_process.wait()
-        self.processing_thread.join()
 
     def stop_recording(self):
         self.recording_process.send_signal(signal.SIGINT)
