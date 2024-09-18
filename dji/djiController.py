@@ -6,7 +6,6 @@ import datetime
 import csv
 import importlib.util
 from ultralytics import YOLO
-import navigation
 from dji.djiInterface import DJIInterface, DJIController
 from dji.djiCamera import DJICamera
 

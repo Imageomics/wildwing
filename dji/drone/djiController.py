@@ -1,5 +1,7 @@
 import requests
 from dji.drone.djiConstants import EP_BASE
+from dji.drone.djiCamera import DJICamera
+from dji.drone.djiPiloting import DJIPiloting
 
 
 class DJIController:
@@ -7,6 +9,8 @@ class DJIController:
 
     def __init__(self, drone_ip: str):
         self.drone_url = f"http://{drone_ip}:8080"
+        self.camera = DJICamera(drone_ip)
+        self.piloting = DJIPiloting(self)
 
     def _request_get(self, endPoint, verbose=False):
         response = requests.get(f"{self.drone_url}{endPoint}")
@@ -18,4 +22,4 @@ class DJIController:
         self._request_get(EP_BASE, True)
 
 
-# make dji controller like anafi software pilot controller
+# TODO: make dji controller like anafi software pilot controller
