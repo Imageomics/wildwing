@@ -4,14 +4,8 @@ import ast
 import pymap3d
 import math
 from time import sleep
-import cv2
-import threading
-import sys
 import os 
-import subprocess
-import numpy as np
 import pandas as pd
-import signal
 
 
 RESSOURCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Ressources")
@@ -187,40 +181,3 @@ class DJIController:
                 sleep(2)
                 print(f"Waypoint reached !\n\tCurrent state: {states}")
                 break
-
-
-
-class BufferLessVideoCapture:
-    def __init__(self, IP_RC):
-        source = f"rtsp://aaa:aaa@{IP_RC}:8554/streaming/live/1"
-        ffmpeg_cmd = [
-            "ffmpeg",
-            "-i",  source,
-            "-vf", "fps=10",
-            "-update", "1",
-            "-hls_flags", "temp_file",
-            IMAGE_BUFFER,
-            "-y"
-        ]
-
-        # Open FFmpeg process
-        self.ffmpeg_process = subprocess.Popen(ffmpeg_cmd)
-        sleep(2)
-        
-    
-    # retrieve latest frame
-    def read(self):
-        frame = cv2.imread(IMAGE_BUFFER)
-        return True, frame
-
-    def __del__(self):
-        self.ffmpeg_process.send_signal(signal.SIGINT)
-        self.ffmpeg_process.wait()  
-
-
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: python TestRequest.py <IP_RC>")
-    else:
-        dji = DJIInterface(sys.argv[1])
-        dji.requestGet(EP_BASE, True)
