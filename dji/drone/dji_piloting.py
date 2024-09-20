@@ -1,4 +1,6 @@
 from time import sleep
+import threading
+import signal
 from dji.drone.dji_drone import DJIDrone
 from dji.drone.dji_constants import (
     TAKEOFF_HEIGHT, GROUND_HEIGHT, DESCENT_TIME
@@ -9,20 +11,26 @@ class DJIPiloting:
     def __init__(self, drone_object: DJIDrone):
         self.drone = drone_object
         self.action_queue = []
+        self.threads = {}
+
+    def go_to_wp(self, thread, wp):
+        """Start a thread telling the drone to go to a waypoint"""
+        self.threads[thread] = threading.Thread(target=self.drone.go_to_wp, args=wp)
+        self.threads[thread].start()
 
     def _takeoff(self):
         wp = self.drone.current_wp()
         # Alternative: set altitude to a constant value
         # instead of adjusting current altitude
         wp["alt"] += TAKEOFF_HEIGHT
-        self.drone.go_to_wp(wp)
+        self.go_to_wp('takeoff', wp)
 
     def _land(self):
         wp = self.drone.current_wp()
         descent_speed = wp["alt"] / DESCENT_TIME
         while wp["alt"] > GROUND_HEIGHT:
             wp["alt"] = max(GROUND_HEIGHT, wp["alt"] - descent_speed)
-            self.drone.go_to_wp(wp)
+            self.go_to_wp('land', wp)
             sleep(1)
 
     def takeoff(self, queue=False):
@@ -50,21 +58,26 @@ class DJIPiloting:
         pass
 
     def cancel_move_by(self):
-        pass
+        self.threads["move_by"].send_signal(signal.SIGINT)
 
     def cancel_move_to(self):
-        pass
+        self.threads["move_to"].send_signal(signal.SIGINT)
 
     def add_action(self, action):
-        pass
+        """Add action to queue"""
+        self.action_queue.append(action)
 
     def remove_action(self, index):
-        pass
+        """Remove action at index from queue"""
+        return self.action_queue.pop(index)
 
     def clear_actions(self):
+        """Clear action queue"""
+        del self.action_queue
         self.action_queue = []
 
     def execute_actions(self, num=-1):
+        """Execute {num} queued actions"""
         if num < 0:
             num = len(self.action_queue)
 
