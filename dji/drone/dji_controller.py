@@ -1,8 +1,8 @@
-import requests
 import json
-import pymap3d
 import math
 from time import sleep
+import pymap3d
+import requests
 
 from dji.drone.djiConstants import (
     EP_BASE,
@@ -21,7 +21,7 @@ from dji.drone.djiConstants import (
     CTRL_THRESH_Y,
     CTRL_THRESH_HEAD
 )
-from dji.drone.djiCamera import DJICamera
+from dji.drone.dji_camera import DJICamera
 from dji.drone.djiPiloting import DJIPiloting
 
 
