@@ -22,8 +22,8 @@ class DJIPiloting:
         descent_speed = wp["alt"] / DESCENT_TIME
         while wp["alt"] > GROUND_HEIGHT:
             wp["alt"] = max(GROUND_HEIGHT, wp["alt"] - descent_speed)
-        self.drone.go_to_wp(wp)
-        sleep(1)
+            self.drone.go_to_wp(wp)
+            sleep(1)
 
     def takeoff(self, queue=False):
         """Takeoff {TAKEOFF_HEIGHT} meters"""
