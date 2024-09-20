@@ -37,8 +37,7 @@ class DJIController:
         """Get endpoint from DJI drone"""
         response = requests.get(f"{self.drone_url}{end_point}")
         if verbose:
-            print(
-                f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
+            print(f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
         return response
 
     def request_all_states(self, verbose=False):
@@ -55,8 +54,7 @@ class DJIController:
         """Sent data to endpoint & return response"""
         response = requests.post(f"{self.drone_url}{end_point}{str(data)}")
         if verbose:
-            print(
-                f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
+            print(f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
         return response
 
     def send_stick(self, left_x=0, left_y=0, right_x=0, right_y=0):
@@ -84,7 +82,7 @@ class DJIController:
         return rep
 
     def connect(self):
-        """Check connection to drone"""
+        """Check connection to DJI drone"""
         self.request_get(EP_BASE, True)
         # TODO: confirm connection?
 
@@ -103,34 +101,34 @@ class DJIController:
                 states["location"]["longitude"],
                 states["location"]["altitude"]
             )
-            distToWp = math.hypot(err_east, err_north)
-            bearingToWp = math.atan2(err_east, err_north)
-            errX = -distToWp * \
-                math.cos(bearingToWp + math.pi/2 -
+            dist_to_wp = math.hypot(err_east, err_north)
+            bearing_to_wp = math.atan2(err_east, err_north)
+            err_x = -dist_to_wp * \
+                math.cos(bearing_to_wp + math.pi/2 -
                          states["heading"]/180.*math.pi)
-            errY = distToWp * \
-                math.sin(bearingToWp + math.pi/2 -
+            err_y = dist_to_wp * \
+                math.sin(bearing_to_wp + math.pi/2 -
                          states["heading"]/180.*math.pi)
-            errAlt = err_up
-            errHead = wp["head"] - states["heading"]
+            err_alt = err_up
+            err_head = wp["head"] - states["heading"]
 
             if current_control == "altitude":
-                cmdAlt = errAlt*CTRL_GAIN_ALT
-                self.send_stick(0, cmdAlt, 0, 0)
-                if abs(errAlt) < CTRL_THRESH_ALT:
+                cmd_alt = err_alt*CTRL_GAIN_ALT
+                self.send_stick(0, cmd_alt, 0, 0)
+                if abs(err_alt) < CTRL_THRESH_ALT:
                     current_control = "horizontal"
 
             elif current_control == "horizontal":
-                cmdBodyX = errX*CTRL_GAIN_X
-                cmdBodyY = errY*CTRL_GAIN_Y
-                self.dji.requestSendStick(0, 0, cmdBodyX, cmdBodyY)
-                if abs(errX) < CTRL_THRESH_X and abs(errY) < CTRL_THRESH_Y:
+                cmd_body_x = err_x*CTRL_GAIN_X
+                cmd_body_y = err_y*CTRL_GAIN_Y
+                self.send_stick(0, 0, cmd_body_x, cmd_body_y)
+                if abs(err_x) < CTRL_THRESH_X and abs(err_y) < CTRL_THRESH_Y:
                     current_control = "heading"
 
             elif current_control == "heading":
-                cmdHead = errHead*CTRL_GAIN_HEAD
-                self.dji.requestSendStick(cmdHead, 0, 0, 0)
-                if abs(errHead) < CTRL_THRESH_HEAD:
+                cmd_head = err_head*CTRL_GAIN_HEAD
+                self.send_stick(cmd_head, 0, 0, 0)
+                if abs(err_head) < CTRL_THRESH_HEAD:
                     current_control = "camera"
 
             elif current_control == "camera":
