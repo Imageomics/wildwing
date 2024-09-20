@@ -1,11 +1,22 @@
+from dji.drone.dji_drone import DJIDrone
+from dji.drone.dji_constants import TAKEOFF_HEIGHT
+
 class DJIPiloting:
-    def __init__(self, drone_object):
+    def __init__(self, drone_object: DJIDrone):
         self.drone = drone_object
         self.action_queue = []
 
+    def _takeoff(self):
+        wp = self.drone.current_wp()
+        # Alternative: set this to a constant value
+        wp["alt"] += TAKEOFF_HEIGHT
+        self.drone.go_to_wp()
+
     def takeoff(self, queue=False):
+        """Takeoff {TAKEOFF_HEIGHT} meters"""
         if not queue:
             print("------ TAKEOFF ------")
+            self._takeoff()
         else:
             self.add_action(self.takeoff)
 

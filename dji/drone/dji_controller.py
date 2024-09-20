@@ -9,7 +9,7 @@ class DJIController:
     def __init__(self, drone_ip: str):
         self.drone = DJIDrone(drone_ip)
         self.camera = DJICamera(drone_ip)
-        self.piloting = DJIPiloting(self)
+        self.piloting = DJIPiloting(self.drone)
 
     def connect(self):
         """Check connection to DJI drone"""

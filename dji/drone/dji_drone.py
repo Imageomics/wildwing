@@ -88,6 +88,19 @@ class DJIDrone:
         """Disconnect from DJI drone"""
         # TODO
 
+    def current_wp(self):
+        """Get current waypoint"""
+        wp = {}
+        telem = self.request_telem()
+        location = telem["location"]
+        wp["lat"] = location["latitude"]
+        wp["lon"] = location["longitude"]
+        wp["alt"] = location["altitude"]
+        wp["head"] = telem["heading"]
+        wp["gimbalPitch"] = telem["gimbalAttitude"]["pitch"]
+        wp["zoomRatio"] = telem["zoomRatio"]
+        return wp
+
     def go_to_wp(self, wp):
         """Send DJI drone to waypoint"""
         print(f"Going to wp {wp}")
