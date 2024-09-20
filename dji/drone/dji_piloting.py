@@ -15,7 +15,8 @@ class DJIPiloting:
 
     def go_to_wp(self, thread, wp):
         """Start a thread telling the drone to go to a waypoint"""
-        self.threads[thread] = threading.Thread(target=self.drone.go_to_wp, args=wp)
+        self.threads[thread] = threading.Thread(
+            target=self.drone.go_to_wp, args=wp)
         self.threads[thread].start()
 
     def _takeoff(self):
@@ -49,10 +50,35 @@ class DJIPiloting:
             self.add_action(self.land)
 
     def wait_until_state(self, state_type, state, timeout=None):
+        # TODO: implement this with dji state equivalent
         pass
 
     def move_by(self, x, y, z, angle, wait=False, queue=False):
-        pass
+        wp = self.drone.current_wp()
+        if x != 0 or y != 0 or z != 0:
+            # TODO: calc lat & lon change
+            wp["lat"] += 0
+            wp["lon"] += 0
+            wp["alt"] += z
+        elif angle != 0:
+            wp["head"] += angle
+
+        if not queue:
+            self.go_to_wp("move_by", wp)
+            if wait:
+                try:
+                    self.threads["move_to"].join()
+                except Exception:
+                    pass
+            print("------ MOVEBY ------")
+            print(f"------ x : {x} ------")
+            print(f"------ Y : {y} ------")
+            print(f"------ Z : {z} ------")
+            print(f"------ ANGLE : {angle} ------")
+        else:
+            self.add_action([self.go_to_wp, "move_by", wp])
+            if wait:
+                self.wait_until_state("move_by", "hovering")
 
     def move_to(self, lat, lon, alt, orientation_mode="NONE", heading=0, wait=False, queue=False):
         # TODO: find dji equivalent to orientation mode
@@ -74,11 +100,10 @@ class DJIPiloting:
             print(f"------ LON : {lon} ------")
             print(f"------ ALT : {alt} ------")
             print(f"------ HEADING : {heading} ------")
-        else:                
+        else:
             self.add_action([self.go_to_wp, "move_to", wp])
             if wait:
                 self.wait_until_state("move_to", "hovering")
-
 
     def cancel_move_by(self):
         self.threads["move_by"].send_signal(signal.SIGINT)
