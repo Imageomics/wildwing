@@ -1,4 +1,4 @@
-from dji.drone.djiCameraMedia import DJICameraMedia
+from dji.drone.dji_camera_media import DJICameraMedia
 
 
 class DJICamera:

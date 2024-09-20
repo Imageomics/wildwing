@@ -4,14 +4,14 @@ from time import sleep
 import pymap3d
 import requests
 
-from dji.drone.djiConstants import (
+from dji.drone.dji_constants import (
     EP_BASE,
     EP_ALL_STATES,
     EP_STICK,
     EP_GIMBAL_SET_PITCH,
     EP_ZOOM
 )
-from dji.drone.djiConstants import (
+from dji.drone.dji_constants import (
     CTRL_GAIN_ALT,
     CTRL_THRESH_ALT,
     CTRL_GAIN_X,
@@ -22,7 +22,7 @@ from dji.drone.djiConstants import (
     CTRL_THRESH_HEAD
 )
 from dji.drone.dji_camera import DJICamera
-from dji.drone.djiPiloting import DJIPiloting
+from dji.drone.dji_piloting import DJIPiloting
 
 
 class DJIController:
