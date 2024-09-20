@@ -3,10 +3,10 @@ import json
 import pymap3d
 import math
 from time import sleep
-import os
-import pandas as pd
 
-from dji.drone.djiConstants import EP_BASE, EP_ALL_STATES
+from dji.drone.djiConstants import (
+    EP_BASE, EP_ALL_STATES, EP_STICK, EP_GIMBAL_SET_PITCH, EP_ZOOM
+)
 from dji.drone.djiCamera import DJICamera
 from dji.drone.djiPiloting import DJIPiloting
 
@@ -19,48 +19,59 @@ class DJIController:
         self.camera = DJICamera(drone_ip)
         self.piloting = DJIPiloting(self)
 
-    def _request_get(self, endPoint, verbose=False):
-        response = requests.get(f"{self.drone_url}{endPoint}")
+    def request_get(self, end_point, verbose=False):
+        """Get endpoint from DJI drone"""
+        response = requests.get(f"{self.drone_url}{end_point}")
         if verbose:
-            print(f"EP : {endPoint}\t{str(response.content, encoding='utf-8')}")
+            print(f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
         return response
 
     def request_all_states(self, verbose=False):
-        response = self._request_get(EP_ALL_STATES, verbose)
+        """Request all states from DJI drone"""
+        response = self.request_get(EP_ALL_STATES, verbose)
         states = json.loads(response.content.decode('utf-8'))
         return states
 
     def request_telem(self):
+        """Request telemetry info from DJI drone"""
         return self.request_all_states()
 
-    def requestSend(self, endPoint, data, verbose=False):
-        response = requests.post(self.baseTelemUrl + endPoint, str(data))
+    def request_send(self, end_point, data, verbose=False):
+        """Sent data to endpoint & return response"""
+        response = requests.post(f"{self.drone_url}{end_point}{str(data)}")
         if verbose:
-            print("EP : " + endPoint + "\t" + str(response.content, encoding="utf-8"))
+            print(
+                f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
         return response
 
-    def requestSendStick(self, leftX = 0, leftY = 0, rightX = 0, rightY = 0):
+    def request_send_stick(self, left_x=0, left_y=0, right_x=0, right_y=0):
+        """Send stick (simulating controller) request to DJI drone"""
         # Saturate values such that they are in [-1;1]
         s = 0.3
-        leftX = max(-s,min(s,leftX))
-        leftY = max(-s,min(s,leftY))
-        rightX = max(-s,min(s,rightX))
-        rightY = max(-s,min(s,rightY))
-        rep = self.requestSend(EP_STICK, f"{leftX:.4f},{leftY:.4f},{rightX:.4f},{rightY:.4f}")
+        left_x = max(-s, min(s, left_x))
+        left_y = max(-s, min(s, left_y))
+        right_x = max(-s, min(s, right_x))
+        right_y = max(-s, min(s, right_y))
+        rep = self.request_send(
+            EP_STICK, f"{left_x:.4f},{left_y:.4f},{right_x:.4f},{right_y:.4f}")
         return rep
 
-    def requestSendGimbalPitch(self, pitch = 0):
-        rep = self.requestSend(EP_GIMBAL_SET_PITCH, f"0,{pitch},0")
+    def requestSendGimbalPitch(self, pitch=0):
+        """"""
+        rep = self.request_send(EP_GIMBAL_SET_PITCH, f"0,{pitch},0")
         return rep
 
-    def requestSendZoomRatio(self, zoomRatio = 1):
-        rep = self.requestSend(EP_ZOOM, zoomRatio)
+    def requestSendZoomRatio(self, zoom_ratio=1):
+        rep = self.request_send(EP_ZOOM, zoom_ratio)
         return rep
 
     def connect(self):
-        self._request_get(EP_BASE, True)
+        """Check connection to drone"""
+        self.request_get(EP_BASE, True)
+        # TODO: confirm connection?
 
-    def go_to_WP(self, wp):
+    def go_to_wp(self, wp):
+        """Send DJI drone to waypoint"""
         print(f"Going to wp {wp}")
         current_control = "altitude"
         while True:
@@ -87,7 +98,7 @@ class DJIController:
 
             if current_control == "altitude":
                 cmdAlt = errAlt*CTRL_GAIN_ALT
-                self.requestSendStick(0, cmdAlt, 0, 0)
+                self.request_send_stick(0, cmdAlt, 0, 0)
                 if abs(errAlt) < CTRL_THRESH_ALT:
                     current_control = "horizontal"
 
@@ -105,8 +116,8 @@ class DJIController:
                     current_control = "camera"
 
             elif current_control == "camera":
-                self.dji.requestSendGimbalPitch(wp["gimbalPitch"])
-                self.dji.requestSendZoomRatio(wp["zoomRatio"])
+                self.requestSendGimbalPitch(wp["gimbalPitch"])
+                self.requestSendZoomRatio(wp["zoomRatio"])
                 sleep(2)
                 print(f"Waypoint reached !\n\tCurrent state: {states}")
                 break
