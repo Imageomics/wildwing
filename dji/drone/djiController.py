@@ -5,14 +5,28 @@ import math
 from time import sleep
 
 from dji.drone.djiConstants import (
-    EP_BASE, EP_ALL_STATES, EP_STICK, EP_GIMBAL_SET_PITCH, EP_ZOOM
+    EP_BASE,
+    EP_ALL_STATES,
+    EP_STICK,
+    EP_GIMBAL_SET_PITCH,
+    EP_ZOOM
+)
+from dji.drone.djiConstants import (
+    CTRL_GAIN_ALT,
+    CTRL_THRESH_ALT,
+    CTRL_GAIN_X,
+    CTRL_GAIN_Y,
+    CTRL_GAIN_HEAD,
+    CTRL_THRESH_X,
+    CTRL_THRESH_Y,
+    CTRL_THRESH_HEAD
 )
 from dji.drone.djiCamera import DJICamera
 from dji.drone.djiPiloting import DJIPiloting
 
 
 class DJIController:
-    """A class to control DJI drones."""
+    """A class to control DJI drones"""
 
     def __init__(self, drone_ip: str):
         self.drone_url = f"http://{drone_ip}:8080"
@@ -23,7 +37,8 @@ class DJIController:
         """Get endpoint from DJI drone"""
         response = requests.get(f"{self.drone_url}{end_point}")
         if verbose:
-            print(f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
+            print(
+                f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
         return response
 
     def request_all_states(self, verbose=False):
@@ -44,7 +59,7 @@ class DJIController:
                 f"EP : {end_point}\t{str(response.content, encoding='utf-8')}")
         return response
 
-    def request_send_stick(self, left_x=0, left_y=0, right_x=0, right_y=0):
+    def send_stick(self, left_x=0, left_y=0, right_x=0, right_y=0):
         """Send stick (simulating controller) request to DJI drone"""
         # Saturate values such that they are in [-1;1]
         s = 0.3
@@ -56,13 +71,16 @@ class DJIController:
             EP_STICK, f"{left_x:.4f},{left_y:.4f},{right_x:.4f},{right_y:.4f}")
         return rep
 
-    def requestSendGimbalPitch(self, pitch=0):
-        """"""
+    def set_gimbal_pitch(self, pitch=0):
+        """Request DJI gimbal pitch"""
         rep = self.request_send(EP_GIMBAL_SET_PITCH, f"0,{pitch},0")
+        # TODO: verify gimbal pitch?
         return rep
 
-    def requestSendZoomRatio(self, zoom_ratio=1):
+    def set_zoom_ratio(self, zoom_ratio=1):
+        """Request DJI zoom ratio"""
         rep = self.request_send(EP_ZOOM, zoom_ratio)
+        # TODO: verify zoom ratio?
         return rep
 
     def connect(self):
@@ -98,7 +116,7 @@ class DJIController:
 
             if current_control == "altitude":
                 cmdAlt = errAlt*CTRL_GAIN_ALT
-                self.request_send_stick(0, cmdAlt, 0, 0)
+                self.send_stick(0, cmdAlt, 0, 0)
                 if abs(errAlt) < CTRL_THRESH_ALT:
                     current_control = "horizontal"
 
@@ -116,8 +134,8 @@ class DJIController:
                     current_control = "camera"
 
             elif current_control == "camera":
-                self.requestSendGimbalPitch(wp["gimbalPitch"])
-                self.requestSendZoomRatio(wp["zoomRatio"])
+                self.set_gimbal_pitch(wp["gimbalPitch"])
+                self.set_zoom_ratio(wp["zoomRatio"])
                 sleep(2)
                 print(f"Waypoint reached !\n\tCurrent state: {states}")
                 break
