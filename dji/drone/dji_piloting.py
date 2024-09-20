@@ -1,6 +1,7 @@
 from time import sleep
 import threading
 import signal
+from math import cos, sin, radians
 from dji.drone.dji_drone import DJIDrone
 from dji.drone.dji_constants import (
     TAKEOFF_HEIGHT, GROUND_HEIGHT, DESCENT_TIME
@@ -56,9 +57,13 @@ class DJIPiloting:
     def move_by(self, x, y, z, angle, wait=False, queue=False):
         wp = self.drone.current_wp()
         if x != 0 or y != 0 or z != 0:
-            # TODO: calc lat & lon change
-            wp["lat"] += 0
-            wp["lon"] += 0
+            heading = wp["head"]
+            theta_x = (-heading + 90) % 360
+            theta_y = (-heading + 180) % 360
+            move_lat = x * sin(radians(theta_x)) + y * cos(radians(theta_y))
+            mov_lon = x * cos(radians(theta_x)) + y * sin(radians(theta_y))
+            wp["lat"] += move_lat
+            wp["lon"] += mov_lon
             wp["alt"] += z
         elif angle != 0:
             wp["head"] += angle
