@@ -55,7 +55,30 @@ class DJIPiloting:
         pass
 
     def move_to(self, lat, lon, alt, orientation_mode="NONE", heading=0, wait=False, queue=False):
-        pass
+        # TODO: find dji equivalent to orientation mode
+        wp = self.drone.current_wp()
+        wp["lat"] = lat
+        wp["lon"] = lon
+        wp["alt"] = alt
+        wp["head"] = heading
+
+        if not queue:
+            self.go_to_wp("move_to", wp)
+            if wait:
+                try:
+                    self.threads["move_to"].join()
+                except Exception:
+                    pass
+            print("------ MOVETO ------")
+            print(f"------ LAT : {lat} ------")
+            print(f"------ LON : {lon} ------")
+            print(f"------ ALT : {alt} ------")
+            print(f"------ HEADING : {heading} ------")
+        else:                
+            self.add_action([self.go_to_wp, "move_to", wp])
+            if wait:
+                self.wait_until_state("move_to", "hovering")
+
 
     def cancel_move_by(self):
         self.threads["move_by"].send_signal(signal.SIGINT)
@@ -83,4 +106,9 @@ class DJIPiloting:
 
         for _ in range(num):
             action = self.action_queue.pop(0)
-            action()
+            if callable(action):
+                action()
+            else:
+                function = action[0]
+                params = action[1:]
+                function(*params)
