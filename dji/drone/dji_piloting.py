@@ -61,9 +61,9 @@ class DJIPiloting:
             theta_x = (-heading + 90) % 360
             theta_y = (-heading + 180) % 360
             move_lat = x * sin(radians(theta_x)) + y * cos(radians(theta_y))
-            mov_lon = x * cos(radians(theta_x)) + y * sin(radians(theta_y))
+            move_lon = x * cos(radians(theta_x)) + y * sin(radians(theta_y))
             wp["lat"] += move_lat
-            wp["lon"] += mov_lon
+            wp["lon"] += move_lon
             wp["alt"] += z
         elif angle != 0:
             wp["head"] += angle
