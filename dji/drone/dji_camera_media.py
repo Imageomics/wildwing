@@ -24,6 +24,7 @@ class DJICameraMedia:
         self.streaming_process = None
 
     def setup_recording(self):
+        # TODO: check if DJI needs any set up
         pass
 
     def start_recording(self):
@@ -61,4 +62,5 @@ class DJICameraMedia:
         self.recording_process.wait()
 
     def download_last_media(self):
+        # TODO: move output.mp4 to download location
         pass
