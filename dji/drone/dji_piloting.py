@@ -1,5 +1,9 @@
+from time import sleep
 from dji.drone.dji_drone import DJIDrone
-from dji.drone.dji_constants import TAKEOFF_HEIGHT
+from dji.drone.dji_constants import (
+    TAKEOFF_HEIGHT, GROUND_HEIGHT, DESCENT_TIME
+)
+
 
 class DJIPiloting:
     def __init__(self, drone_object: DJIDrone):
@@ -8,9 +12,18 @@ class DJIPiloting:
 
     def _takeoff(self):
         wp = self.drone.current_wp()
-        # Alternative: set this to a constant value
+        # Alternative: set altitude to a constant value
+        # instead of adjusting current altitude
         wp["alt"] += TAKEOFF_HEIGHT
-        self.drone.go_to_wp()
+        self.drone.go_to_wp(wp)
+
+    def _land(self):
+        wp = self.drone.current_wp()
+        descent_speed = wp["alt"] / DESCENT_TIME
+        while wp["alt"] > GROUND_HEIGHT:
+            wp["alt"] = max(GROUND_HEIGHT, wp["alt"] - descent_speed)
+        self.drone.go_to_wp(wp)
+        sleep(1)
 
     def takeoff(self, queue=False):
         """Takeoff {TAKEOFF_HEIGHT} meters"""
@@ -23,6 +36,7 @@ class DJIPiloting:
     def land(self, queue=False):
         if not queue:
             print("------ LAND ------")
+            self._land()
         else:
             self.add_action(self.land)
 
