@@ -1,4 +1,5 @@
 from dji.drone.dji_drone import DJIDrone
+from time import time
 
 class DJICameraControls:
     def __init__(self, drone_object: DJIDrone):
@@ -19,5 +20,11 @@ class DJICameraControls:
         self.drone.set_gimbal_pitch(pitch)
 
     def wait_until_orientation(self, yaw, pitch, roll, timeout=5):
-        # TODO: poll orientation until timeout
-        pass
+        """Poll orientation until timeout"""
+        start = time()
+
+        while time() - start < timeout:
+            telem = self.drone.request_telem()['gimbalAttitude']
+            if telem['yaw'] == yaw and telem['pitch'] == pitch and telem['roll'] == roll:
+                return True
+        return False
