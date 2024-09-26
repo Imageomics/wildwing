@@ -55,6 +55,12 @@ class DJIPiloting:
         pass
 
     def move_by(self, x, y, z, angle, wait=False, queue=False):
+        """
+        x: meters forward/backward
+        y: meters left/right
+        z: meters up/down
+        angle: degrees to rotate
+        """
         wp = self.drone.current_wp()
         if x != 0 or y != 0 or z != 0:
             heading = wp["head"]
@@ -86,6 +92,12 @@ class DJIPiloting:
                 self.wait_until_state("move_by", "hovering")
 
     def move_to(self, lat, lon, alt, orientation_mode="NONE", heading=0, wait=False, queue=False):
+        """
+        lat: latitude
+        lon: longitude
+        alt: altitude
+        heading: degrees from north
+        """
         # TODO: find dji equivalent to orientation mode
         wp = self.drone.current_wp()
         wp["lat"] = lat
