@@ -5,16 +5,19 @@ class DJICameraControls:
         self.drone = drone_object
 
     def reset_zoom(self):
-        pass
+        self.drone.set_zoom_ratio()
 
     def reset_orientation(self):
-        pass
+        self.drone.set_gimbal_pitch()
 
     def set_zoom(self, target, control_mode="level"):
-        pass
+        # TODO: use control mode
+        self.drone.set_zoom_ratio(target)
 
     def set_orientation(self, yaw, pitch, roll, reference=1, wait=False):
-        pass
+        # TODO: adjust drone to allow setting of yaw & roll
+        self.drone.set_gimbal_pitch(pitch)
 
     def wait_until_orientation(self, yaw, pitch, roll, timeout=5):
+        # TODO: poll orientation until timeout
         pass
