@@ -8,7 +8,7 @@ class DJIController:
 
     def __init__(self, drone_ip: str):
         self.drone = DJIDrone(drone_ip)
-        self.camera = DJICamera(drone_ip)
+        self.camera = DJICamera(drone_ip, self.drone)
         self.piloting = DJIPiloting(self.drone)
 
     def connect(self):
@@ -25,6 +25,3 @@ class DJIController:
         coordinates = [telemetry['latitude'], telemetry['longitude'],
                        telemetry['altitude']]
         return coordinates
-
-
-# TODO: make dji controller like anafi software pilot controller

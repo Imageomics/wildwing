@@ -1,5 +1,7 @@
+from dji.drone.dji_drone import DJIDrone
+
 class DJICameraControls:
-    def __init__(self, drone_object):
+    def __init__(self, drone_object: DJIDrone):
         self.drone = drone_object
 
     def reset_zoom(self):
