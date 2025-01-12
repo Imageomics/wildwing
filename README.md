@@ -6,7 +6,7 @@
 #### This repo contains software to autonomously track group-living animals using Parrot Anafi drones.
 
 ## Overview of WildWing framework
-![](images/framework.png)
+![](images/ww.png)
 Framework of the WildWing unmanned aerial system (UAS) autonomous navigation control logic
 
 ## Instructions for use
